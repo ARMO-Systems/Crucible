@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Crucible</id>
+        <version>1.0.0</version>
+        <authors>Andr</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Умная фильтрация Crucible review</description>
+    </metadata>
+    <files>
+        <file src="..\Source\_output\Release\AutocompleteMenu.dll" target="tools\AutocompleteMenu.dll" />
+        <file src="..\Source\_output\Release\Crucible.exe" target="tools\Crucible.exe" />
+        <file src="..\Source\_output\Release\Crucible.exe.config" target="tools\Crucible.exe.config" />
+        <file src="..\Source\_output\Release\Roslyn.Compilers.CSharp.dll" target="tools\Roslyn.Compilers.CSharp.dll" />
+        <file src="..\Source\_output\Release\Roslyn.Compilers.dll" target="tools\Roslyn.Compilers.dll" />
+        <file src="..\Source\_output\Release\System.Interactive.dll" target="tools\System.Interactive.dll" />
+        <file src="..\Source\_output\Release\System.Reactive.Core.dll" target="tools\System.Reactive.Core.dll" />
+        <file src="..\Source\_output\Release\System.Reactive.Interfaces.dll" target="tools\System.Reactive.Interfaces.dll" />
+        <file src="..\Source\_output\Release\System.Reactive.Linq.dll" target="tools\System.Reactive.Linq.dll" />
+        <file src="..\Source\_output\Release\System.Reactive.PlatformServices.dll" target="tools\System.Reactive.PlatformServices.dll" />
+    </files>
+</package>
