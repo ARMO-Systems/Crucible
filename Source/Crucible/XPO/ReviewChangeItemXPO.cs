@@ -5,7 +5,16 @@ namespace Crucible.XPO
 {
     public sealed class ReviewChangeItemXPO : XPObject
     {
+        public enum EType
+        {
+            eFile,
+            eGeneralComment,
+            eComment,
+            eReply
+        }
+
         private DateTime changeTime;
+        private EType changeType;
         private string comment;
         private string id;
         private ReviewXPO review;
@@ -26,6 +35,12 @@ namespace Crucible.XPO
         {
             get { return user; }
             set { SetPropertyValue( "User", ref user, value ); }
+        }
+
+        public EType ChangeType
+        {
+            get { return changeType; }
+            set { SetPropertyValue( "ChangeType", ref changeType, value ); }
         }
 
         [DbType( "NTEXT" )]

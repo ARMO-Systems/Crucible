@@ -38,8 +38,8 @@ namespace Crucible
             InitReviewChanges();
 
             timerRefreshData.Tick += ( o, e ) => DownloadReviews( false );
-            timerHour.Tick += ( o, e ) => DownloadReviews();
-            iFind.ItemClick += ( sender, args ) => DownloadReviews();
+            timerHour.Tick += ( o, e ) => DownloadReviews( true );
+            iFind.ItemClick += ( sender, args ) => DownloadReviews( true );
             CheckFiltr.ItemClick += ( sender, args ) => DownloadReviews( false );
             notifyIcon.Click += ( o, e ) => Restore();
             notifyIcon.BalloonTipClicked += ( o, e ) => Restore();
@@ -53,7 +53,7 @@ namespace Crucible
                     Select( item => item.Text.Substring( 0, item.Position ) ).
                     ObserveOn( SynchronizationContext.Current ).
                     Subscribe( OnCodeChanged );
-            DownloadReviews();
+            DownloadReviews( false );
         }
 
         private string ServerURL
@@ -81,17 +81,18 @@ namespace Crucible
             {
                 Name = "Обновленные ревью",
                 Criteria =
-                    "( ( ( review.Reviewers.Any( item => item.User.UserName == \"adp\" && !item.Completed ) || review.Author.UserName == \"adp\" ) && review.Changes.First( item => item.ChangeTime == review.LastChangeTime ).User.UserName != \"adp\" ) || ( review.Author.UserName == \"adp\" && review.Reviewers.All( item => item.Completed ) ) ) && review.State == state.Review"
+                    "( ( ( review.Reviewers.Any( item => item.User.UserName == \"adp\" && !item.Completed ) || review.Author.UserName == \"adp\" ) && review.Changes.First( item => item.ChangeTime == review.LastChangeTime ).User.UserName != \"adp\" ) || ( review.Author.UserName == \"adp\" && review.Reviewers.All( item => item.Completed ) ) ) && review.State == ReviewXPO.EState.Review"
             } );
 
             criterias.Add( new CriteriaXPO( uow ) { Name = "Без фильтра" } );
             criterias.Add( new CriteriaXPO( uow )
             {
                 Name = "Мои ревью",
-                Criteria = "review.Reviewers.Any( item => item.User.UserName == \"adp\" && !item.Completed ) && !review.Reviewers.Any( item => item.User.UserName != \"adp\" && !item.Completed ) && review.State == state.Review"
+                Criteria =
+                    "review.Reviewers.Any( item => item.User.UserName == \"adp\" && !item.Completed ) && !review.Reviewers.Any( item => item.User.UserName != \"adp\" && !item.Completed ) && review.State == ReviewXPO.EState.Review"
             } );
-            criterias.Add( new CriteriaXPO( uow ) { Name = "Все на ревью", Criteria = "review.Reviewers.Any( item => !item.Completed ) && review.State == state.Review" } );
-            criterias.Add( new CriteriaXPO( uow ) { Name = "Мертвые", Criteria = "review.State != state.Review && review.State != state.Closed" } );
+            criterias.Add( new CriteriaXPO( uow ) { Name = "Все на ревью", Criteria = "review.Reviewers.Any( item => !item.Completed ) && review.State == ReviewXPO.EState.Review" } );
+            criterias.Add( new CriteriaXPO( uow ) { Name = "Мертвые", Criteria = "review.State != ReviewXPO.EState.Review && review.State != ReviewXPO.EState.Closed" } );
             uow.CommitChanges();
         }
 
@@ -111,14 +112,14 @@ namespace Crucible
             notifyIcon.Text = message.Substring( 0, Math.Min( 63, message.Length ) );
         }
 
-        private async void DownloadReviews( bool ids = true )
+        private async void DownloadReviews( bool allReview )
         {
             SetUserMessage( Resources.RefreshData );
 
             try
             {
                 timerRefreshData.Stop();
-                await CrucibleParser.GetDataFromCrucibleAsync( textEditServer.Text, textEditUserName.Text, textEditPassword.Text, ids );
+                await CrucibleParser.GetDataFromCrucibleAsync( textEditServer.Text, textEditUserName.Text, textEditPassword.Text, allReview );
                 allReviews.Reload();
                 foreach ( var review in allReviews )
                 {
@@ -197,7 +198,8 @@ namespace Crucible
             if ( reviewChangeItem == null )
                 return;
 
-            Process.Start( @"c:\Program Files (x86)\Google\Chrome\Application\chrome.exe", string.Format( "{0}{1}#{2}", ServerURL, FocusedReview.ID, reviewChangeItem.ID ) );
+            var changeId = reviewChangeItem.ID.Contains( "CMT:" ) ? "c" + reviewChangeItem.ID.Substring( 4 ) : reviewChangeItem.ID;
+            Process.Start( @"c:\Program Files (x86)\Google\Chrome\Application\chrome.exe", string.Format( "{0}{1}#{2}", ServerURL, FocusedReview.ID, changeId ) );
         }
 
         private void gridViewReviews_CustomRowFilter( object sender, RowFilterEventArgs e )

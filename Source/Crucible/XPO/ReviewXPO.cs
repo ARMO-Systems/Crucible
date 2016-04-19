@@ -6,11 +6,25 @@ namespace Crucible.XPO
 {
     public sealed class ReviewXPO : XPObject
     {
+        public enum EState
+        {
+            Draft,
+            Approval,
+            Review,
+            Summarize,
+            Closed,
+            Dead,
+            Rejected,
+            Unknown,
+            OpenSnippet,
+            ClosedSnippet,
+        }
+
         private UserXPO author;
         private DateTime createTime;
         private string id;
         private string name;
-        private state state;
+        private EState state;
 
         public ReviewXPO( Session session ) : base( session )
         {
@@ -22,7 +36,7 @@ namespace Crucible.XPO
             set { SetPropertyValue( "Author", ref author, value ); }
         }
 
-        public state State
+        public EState State
         {
             get { return state; }
             set { SetPropertyValue( "State", ref state, value ); }
@@ -62,6 +76,46 @@ namespace Crucible.XPO
         public XPCollection< ReviewerXPO > Reviewers
         {
             get { return GetCollection< ReviewerXPO >( "Reviewers" ); }
+        }
+
+        public void SetState( string stat )
+        {
+            switch ( stat )
+            {
+                case "Draft":
+                    state = EState.Draft;
+                    break;
+                case "Approval":
+                    state = EState.Approval;
+                    break;
+                case "Review":
+                    state = EState.Review;
+                    break;
+                case "Summarize":
+                    state = EState.Summarize;
+                    break;
+                case "Closed":
+                    state = EState.Closed;
+                    break;
+                case "Dead":
+                    state = EState.Dead;
+                    break;
+                case "Rejected":
+                    state = EState.Rejected;
+                    break;
+                case "Unknown":
+                    state = EState.Unknown;
+                    break;
+                case "OpenSnippet":
+                    state = EState.OpenSnippet;
+                    break;
+                case "ClosedSnippet":
+                    state = EState.ClosedSnippet;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }
