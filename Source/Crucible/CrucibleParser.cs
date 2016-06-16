@@ -30,26 +30,17 @@ namespace Crucible
         {
             UpdateUsers();
             myReviews = new XPCollection< ReviewXPO >( uow ).ToDictionary( item => item.ID );
-            var reviews = allReviews ? GetReview( DateTime.Now.AddDays( -500 ) ) : GetOpenReview();
+            var reviews = allReviews ? GetReview( DateTime.Now.AddYears( -5 ) ) : GetOpenReview();
             reviews.Select( item => new { review = item, reviewXPO = GetReview( item.permaId.id ) } ).ForEach( item => UpdateReview( item.review, item.reviewXPO ) );
 
             uow.CommitChanges();
         }
 
-        private IEnumerable< Review > GetOpenReview()
-        {
-            return client.Execute< List< Review > >( new RestRequest( "/reviews-v1/filter/allOpenReviews", Method.GET ) { RootElement = "reviewData", Timeout = 5 * 60 * 1000 } ).Data;
-        }
+        private IEnumerable< Review > GetOpenReview() => client.Execute< List< Review > >( new RestRequest( "/reviews-v1/filter/allOpenReviews", Method.GET ) { RootElement = "reviewData", Timeout = 5 * 60 * 1000 } ).Data;
 
-        private static long GetGmtinMs( DateTime date )
-        {
-            return ( long ) ( date.ToUniversalTime() - new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc ) ).TotalMilliseconds;
-        }
+        private static long GetGmtinMs( DateTime date ) => ( long ) ( date.ToUniversalTime() - new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc ) ).TotalMilliseconds;
 
-        private static DateTime GetDate( long time )
-        {
-            return new DateTime( 1970, 1, 1 ).AddMilliseconds( time ).ToLocalTime();
-        }
+        private static DateTime GetDate( long time ) => new DateTime( 1970, 1, 1 ).AddMilliseconds( time ).ToLocalTime();
 
         private void UpdateReviewChanges( ReviewXPO reviewXpo )
         {
@@ -65,7 +56,7 @@ namespace Crucible
 
         private void UpdateGeneralComments( ReviewXPO reviewXpo )
         {
-            var comments = client.Execute< List< CommentGeneral > >( new RestRequest( string.Format( "reviews-v1/{0}/comments/general", reviewXpo.ID ), Method.GET ) { RootElement = "comments" } ).Data;
+            var comments = client.Execute< List< CommentGeneral > >( new RestRequest( $"reviews-v1/{reviewXpo.ID}/comments/general", Method.GET ) { RootElement = "comments" } ).Data;
             foreach ( var comment in comments.Expand( item => item.replies ) )
             {
                 var change = GetChange( reviewXpo, comment.permId.id, ReviewChangeItemXPO.EType.eGeneralComment );
@@ -77,7 +68,7 @@ namespace Crucible
 
         private void UpdateComments( ReviewXPO reviewXpo )
         {
-            var comments = client.Execute< List< Comment > >( new RestRequest( string.Format( "reviews-v1/{0}/comments/versioned", reviewXpo.ID ), Method.GET ) { RootElement = "comments" } ).Data;
+            var comments = client.Execute< List< Comment > >( new RestRequest( $"reviews-v1/{reviewXpo.ID}/comments/versioned", Method.GET ) { RootElement = "comments" } ).Data;
 
             foreach ( var comment in comments )
             {
@@ -95,12 +86,9 @@ namespace Crucible
             }
         }
 
-        static string GetComplexId( string id, ReviewChangeItemXPO.EType type )
-        {
-            return id + type;
-        }
+        private static string GetComplexId( string id, ReviewChangeItemXPO.EType type ) => id + type;
 
-        ReviewChangeItemXPO GetChange( ReviewXPO reviewXpo, string id, ReviewChangeItemXPO.EType type )
+        private ReviewChangeItemXPO GetChange( ReviewXPO reviewXpo, string id, ReviewChangeItemXPO.EType type )
         {
             var complexId = GetComplexId( id, type );
             if ( reviewChanges.ContainsKey( complexId ) )
@@ -115,18 +103,18 @@ namespace Crucible
         private void UpdateUsers()
         {
             usersXPO = new XPCollection< UserXPO >( uow ).ToDictionary( user => user.UserName );
-            foreach ( var user in client.Execute< List< User > >( new RestRequest( "users-v1", Method.GET ) { RootElement = "userData" } ).Data )
+            foreach ( var user in
+                client.Execute< List< User > >( new RestRequest( "users-v1", Method.GET ) { RootElement = "userData" } ).Data )
             {
                 var xpo = GetUser( user.userName );
                 xpo.DisplayName = user.displayName;
             }
+
             uow.CommitChanges();
         }
 
-        IEnumerable< Review > GetReview( DateTime from )
-        {
-            return client.Execute< List< Review > >( new RestRequest( string.Format( "reviews-v1/filter?fromDate={0}", GetGmtinMs( @from ) ), Method.GET ) { RootElement = "reviewData", Timeout = 10 * 60 * 1000 } ).Data;
-        }
+        private IEnumerable< Review > GetReview( DateTime from )
+            => client.Execute< List< Review > >( new RestRequest( $"reviews-v1/filter?fromDate={GetGmtinMs( from )}", Method.GET ) { RootElement = "reviewData", Timeout = 10 * 60 * 1000 } ).Data;
 
         private ReviewXPO GetReview( string id )
         {
@@ -137,9 +125,7 @@ namespace Crucible
         }
 
         public static async Task GetDataFromCrucibleAsync( string server, string username, string password, bool allReview )
-        {
-            await Task.Factory.StartNew( () => new CrucibleParser( server, username, password, allReview ).UpdateReviews() );
-        }
+            => await Task.Factory.StartNew( () => new CrucibleParser( server, username, password, allReview ).UpdateReviews() );
 
         private void UpdateReview( Review review, ReviewXPO reviewXPO )
         {
@@ -163,10 +149,7 @@ namespace Crucible
                 ForEach( item => item.reviewerXPO.Completed = item.rev.completed );
         }
 
-        private IEnumerable< Reviewer > GetReviewers( string id )
-        {
-            return client.Execute< List< Reviewer > >( new RestRequest( string.Format( "reviews-v1/{0}/reviewers", id ), Method.GET ) { RootElement = "reviewer" } ).Data;
-        }
+        private IEnumerable< Reviewer > GetReviewers( string id ) => client.Execute< List< Reviewer > >( new RestRequest( $"reviews-v1/{id}/reviewers", Method.GET ) { RootElement = "reviewer" } ).Data;
 
         private UserXPO GetUser( string userName )
         {
@@ -181,12 +164,13 @@ namespace Crucible
 
         private void UpdateLastReviewItems( ReviewXPO reviewXpo )
         {
-            var reviewItems = client.Execute< List< ReviewItem > >( new RestRequest( string.Format( "reviews-v1/{0}/reviewitems", reviewXpo.ID ), Method.GET ) { RootElement = "reviewItem" } ).Data;
+            var reviewItems = client.Execute< List< ReviewItem > >( new RestRequest( $"reviews-v1/{reviewXpo.ID}/reviewitems", Method.GET ) { RootElement = "reviewItem" } ).Data;
             foreach ( var reviewItem in reviewItems )
             {
                 var change = GetChange( reviewXpo, reviewItem.permId.id, ReviewChangeItemXPO.EType.eFile );
                 change.ChangeTime = GetDate( reviewItem.commitDate );
                 change.Comment = reviewItem.fromPath;
+                change.User = GetUser( reviewItem.authorName );
             }
         }
 
@@ -197,6 +181,7 @@ namespace Crucible
             public string fromPath { get; set; }
             public long commitDate { get; set; }
             public ID permId { get; set; }
+            public string authorName { get; set; }
         }
 
         private class Comment
@@ -205,6 +190,7 @@ namespace Crucible
             public User user { get; set; }
             public long createDate { get; set; }
             public string permaId { get; set; }
+            // ReSharper disable once CollectionNeverUpdated.Local
             public List< CommentGeneral > replies { get; set; }
         }
 
@@ -214,6 +200,7 @@ namespace Crucible
             public User user { get; set; }
             public DateTime createDate { get; set; }
             public ID permId { get; set; }
+            // ReSharper disable once CollectionNeverUpdated.Local
             public List< CommentGeneral > replies { get; set; }
         }
 

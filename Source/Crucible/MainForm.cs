@@ -56,20 +56,11 @@ namespace Crucible
             DownloadReviews( false );
         }
 
-        private string ServerURL
-        {
-            get { return string.Format( "http://{0}/cru/", textEditServer.Text ); }
-        }
+        private string ServerURL => $"http://{textEditServer.Text}/cru/";
 
-        private ReviewXPO FocusedReview
-        {
-            get { return gridViewReviews.GetFocusedRow() as ReviewXPO; }
-        }
+        private ReviewXPO FocusedReview => gridViewReviews.GetFocusedRow() as ReviewXPO;
 
-        private CriteriaXPO FocusedCriteria
-        {
-            get { return gridView1.GetFocusedRow() as CriteriaXPO; }
-        }
+        private CriteriaXPO FocusedCriteria => gridView1.GetFocusedRow() as CriteriaXPO;
 
         private void CreateCriterias()
         {
@@ -129,10 +120,11 @@ namespace Crucible
                     foreach ( var reviewer in review.Reviewers )
                         reviewer.Reload();
                 }
+
                 gridControlReviews.DataSource = allReviews;
                 InitReviewChanges();
                 UpdateReviewByFilter();
-                SetUserMessage( string.Format( "Время последнего обновления: {0}", DateTime.Now.ToLongTimeString() ) );
+                SetUserMessage( $"Время последнего обновления: {DateTime.Now.ToLongTimeString()}" );
                 timerRefreshData.Start();
             }
             catch ( Exception ex )
@@ -141,22 +133,16 @@ namespace Crucible
             }
         }
 
-        private void InitReviewChanges()
-        {
-            gridControlReviewChanges.DataSource = FocusedReview != null ? FocusedReview.Changes : null;
-        }
+        private void InitReviewChanges() => gridControlReviewChanges.DataSource = FocusedReview?.Changes;
 
-        private void gridView1_FocusedRowChanged( object sender, FocusedRowChangedEventArgs e )
-        {
-            InitReviewChanges();
-        }
+        private void gridView1_FocusedRowChanged( object sender, FocusedRowChangedEventArgs e ) => InitReviewChanges();
 
         private void gridViewReviews_DoubleClick( object sender, EventArgs e )
         {
             if ( FocusedReview == null )
                 return;
 
-            Process.Start( string.Format( "{0}{1}", ServerURL, FocusedReview.ID ) );
+            Process.Start( $"{ServerURL}{FocusedReview.ID}" );
         }
 
         private void MainForm_Resize( object sender, EventArgs e )
@@ -199,7 +185,7 @@ namespace Crucible
                 return;
 
             var changeId = reviewChangeItem.ID.Contains( "CMT:" ) ? "c" + reviewChangeItem.ID.Substring( 4 ) : reviewChangeItem.ID;
-            Process.Start( @"c:\Program Files (x86)\Google\Chrome\Application\chrome.exe", string.Format( "{0}{1}#{2}", ServerURL, FocusedReview.ID, changeId ) );
+            Process.Start( @"c:\Program Files (x86)\Google\Chrome\Application\chrome.exe", $"{ServerURL}{FocusedReview.ID}#{changeId}" );
         }
 
         private void gridViewReviews_CustomRowFilter( object sender, RowFilterEventArgs e )
@@ -232,10 +218,7 @@ namespace Crucible
             }
         }
 
-        private void gridView1_FocusedRowChanged_1( object sender, FocusedRowChangedEventArgs e )
-        {
-            UpdateReviewByFilter();
-        }
+        private void gridView1_FocusedRowChanged_1( object sender, FocusedRowChangedEventArgs e ) => UpdateReviewByFilter();
 
         private void UpdateReviewByFilter()
         {

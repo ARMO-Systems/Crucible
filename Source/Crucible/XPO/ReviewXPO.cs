@@ -17,7 +17,7 @@ namespace Crucible.XPO
             Rejected,
             Unknown,
             OpenSnippet,
-            ClosedSnippet,
+            ClosedSnippet
         }
 
         private UserXPO author;
@@ -42,10 +42,7 @@ namespace Crucible.XPO
             set { SetPropertyValue( "State", ref state, value ); }
         }
 
-        public DateTime LastChangeTime
-        {
-            get { return Changes.MaxBy( item => item.ChangeTime ).First().ChangeTime; }
-        }
+        public DateTime LastChangeTime => Changes.MaxBy( item => item.ChangeTime ).First().ChangeTime;
 
         public DateTime CreateTime
         {
@@ -67,50 +64,44 @@ namespace Crucible.XPO
         }
 
         [Association( "Review-ReviewChange" )]
-        public XPCollection< ReviewChangeItemXPO > Changes
-        {
-            get { return GetCollection< ReviewChangeItemXPO >( "Changes" ); }
-        }
+        public XPCollection< ReviewChangeItemXPO > Changes => GetCollection< ReviewChangeItemXPO >( "Changes" );
 
         [Association( "Review-Reviewer" )]
-        public XPCollection< ReviewerXPO > Reviewers
-        {
-            get { return GetCollection< ReviewerXPO >( "Reviewers" ); }
-        }
+        public XPCollection< ReviewerXPO > Reviewers => GetCollection< ReviewerXPO >( "Reviewers" );
 
         public void SetState( string stat )
         {
             switch ( stat )
             {
                 case "Draft":
-                    state = EState.Draft;
+                    State = EState.Draft;
                     break;
                 case "Approval":
-                    state = EState.Approval;
+                    State = EState.Approval;
                     break;
                 case "Review":
-                    state = EState.Review;
+                    State = EState.Review;
                     break;
                 case "Summarize":
-                    state = EState.Summarize;
+                    State = EState.Summarize;
                     break;
                 case "Closed":
-                    state = EState.Closed;
+                    State = EState.Closed;
                     break;
                 case "Dead":
-                    state = EState.Dead;
+                    State = EState.Dead;
                     break;
                 case "Rejected":
-                    state = EState.Rejected;
+                    State = EState.Rejected;
                     break;
                 case "Unknown":
-                    state = EState.Unknown;
+                    State = EState.Unknown;
                     break;
                 case "OpenSnippet":
-                    state = EState.OpenSnippet;
+                    State = EState.OpenSnippet;
                     break;
                 case "ClosedSnippet":
-                    state = EState.ClosedSnippet;
+                    State = EState.ClosedSnippet;
                     break;
 
                 default:

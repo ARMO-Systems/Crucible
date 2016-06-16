@@ -36,7 +36,7 @@ namespace Crucible
 
         public IObservable< bool > BackObservable { get; set; }
 
-        public IObservable< char > SymbolObservable { get; private set; }
+        public IObservable< char > SymbolObservable { get; }
 
         public IObservable< string > SelectedItemObservable { get; private set; }
 
@@ -60,6 +60,7 @@ namespace Crucible
                 Hide();
                 return;
             }
+
             currentSymbolsString = currentSymbolsString.Substring( 0, currentSymbolsString.Length - 1 );
             UpdateListBox();
         }

@@ -35,9 +35,6 @@ namespace Crucible
             Application.Run( new MainForm() );
         }
 
-        internal static DateTime ToDT( this string date )
-        {
-            return DateTime.Parse( date );
-        }
+        internal static DateTime ToDT( this string date ) => DateTime.Parse( date );
     }
 }

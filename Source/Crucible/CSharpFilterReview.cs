@@ -58,13 +58,11 @@ namespace Crucible
                 var results = provider.CompileAssemblyFromSource( compilerParams, source );
                 ThrowIfErrors( results );
                 filter = review => ( bool ) results.CompiledAssembly.GetType( "Crucible.CompileClass" ).GetMethod( "Filter" ).Invoke( null, new object[] { review } );
+                //filter = CompileClass.Filter;
             }
         }
 
-        public bool FilterByCode( ReviewXPO review )
-        {
-            return filter == null || filter( review );
-        }
+        public bool FilterByCode( ReviewXPO review ) => filter == null || filter( review );
 
         public IEnumerable< string > GetSymbols( string code )
         {
@@ -92,6 +90,7 @@ namespace Crucible
         {
             if ( results.Errors.Count == 0 )
                 return;
+
             var builder = new StringBuilder();
             results.Errors.Cast< CompilerError >().ForEach( item => builder.AppendLine( item.ErrorText ) );
             throw new Exception( builder.ToString() );
